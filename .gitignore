@@ -1,0 +1,22 @@
+# STLs and 3MFs are intentionally committed so users can grab them directly
+# from GitHub without installing OpenSCAD.
+
+# OpenSCAD scratch
+*.echo
+*.csg
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*~
+
+# Slicer outputs (do not check in)
+*.gcode
+*.gco
+*.bgcode

@@ -1,0 +1,62 @@
+Creative Commons Attribution 4.0 International (CC BY 4.0)
+=============================================================
+
+Copyright (c) 2026 Kazuki Murata (Robostadion)
+
+This work — the "RDK X5 Modular Case" 3D-printable case designs, OpenSCAD
+source files, and accompanying documentation — is licensed under the
+Creative Commons Attribution 4.0 International License (CC BY 4.0).
+
+You are free to:
+
+  - Share — copy and redistribute the material in any medium or format
+  - Adapt — remix, transform, and build upon the material
+            for any purpose, even commercially.
+
+Under the following terms:
+
+  - Attribution — You must give appropriate credit, provide a link to the
+    license, and indicate if changes were made. You may do so in any
+    reasonable manner, but not in any way that suggests the licensor
+    endorses you or your use.
+
+  - No additional restrictions — You may not apply legal terms or
+    technological measures that legally restrict others from doing
+    anything the license permits.
+
+Notices:
+
+  - You do not have to comply with the license for elements of the
+    material in the public domain or where your use is permitted by
+    an applicable exception or limitation.
+
+  - No warranties are given. The license may not give you all of the
+    permissions necessary for your intended use. For example, other
+    rights such as publicity, privacy, or moral rights may limit how
+    you use the material.
+
+Full license text:
+https://creativecommons.org/licenses/by/4.0/legalcode
+
+Human-readable summary:
+https://creativecommons.org/licenses/by/4.0/
+
+----------------------------------------------------------------
+Attribution suggestion when remixing
+----------------------------------------------------------------
+
+"Based on RDK X5 Modular Case by Kazuki Murata (Robostadion),
+ licensed under CC BY 4.0.
+ Original: https://github.com/<your-handle>/rdk-x5-modular-case"
+
+----------------------------------------------------------------
+Reference materials
+----------------------------------------------------------------
+
+The PCB outline geometry used in this case design is derived from
+official D-Robotics RDK X5 mechanical drawings (STEP and DXF files)
+published at https://archive.d-robotics.cc/downloads/hardware/rdk_x5/ .
+Those reference files remain the property of D-Robotics and are
+included in the `reference/` directory for design verification only.
+This case design itself (OpenSCAD source, STL outputs, documentation)
+is the original work of the author and licensed under CC BY 4.0.
