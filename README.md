@@ -23,7 +23,7 @@ an animatronic robot competing in the **D-Robotics Robotics Dream Keeper Challen
 |-----|---------|-----|----------|
 | **Default** (closed, cooling slits) | ![](images/lid_default.png) | [`lid_default.stl`](stl/lid_default.stl) | Everyday use, dust protection, mild cooling |
 | **Open** (frame + X ribs) | ![](images/lid_open.png) | [`lid_open.stl`](stl/lid_open.stl) | Maker projects, full heatsink exposure, max airflow |
-| **VESA Mount** (60×60 M4) | ![](images/lid_vesa.png) | [`lid_vesa.stl`](stl/lid_vesa.stl) | Mount behind a monitor or onto a frame |
+| **VESA Mount** (50×50 M4) | ![](images/lid_vesa.png) | [`lid_vesa.stl`](stl/lid_vesa.stl) | 50 mm 4-hole bracket mount (board is too small for full VESA-75) |
 
 Common base: [`case_base.stl`](stl/case_base.stl) — works with all three lids.
 
@@ -76,14 +76,14 @@ Open `rdk_x5_case.scad` and edit the `// PARAMETERS` block. Useful knobs:
 | `PCB_FIT_GAP` | 0.4 mm | Reduce to 0.3 for snug fit, raise to 0.6 if too tight |
 | `TOP_CLEAR` | 18 mm | Increase to 25 mm if using a tall heatsink + fan |
 | `WALL` | 2.0 mm | Drop to 1.6 for ABS, raise to 3.0 for TPU |
-| `VESA_MODE` | 60 (VESA-60) | Try 75 only if your monitor adapter is small enough |
+| `VESA` | 50 (50×50 M4) | Max that fits on the 56 mm-deep lid; an assert guards against overhang |
 | `SLIT_W`, `SLIT_GAP` | 2.5, 3.0 | Tune slit density on Default Lid |
 
 ## Roadmap
 
 - [x] Default Lid — closed + cooling slits
 - [x] Open Lid — frame with X-cross ribs
-- [x] VESA Mount Lid — 60×60 M4 pattern
+- [x] VESA Mount Lid — 50×50 M4 pattern (bosses fully supported on the lid)
 - [x] Accurate port cutouts — every connector position extracted from the
       official STEP model and verified against the real board mesh
       (USB-A ×2, RJ45, HDMI, audio, USB-C ×2, 40-pin GPIO, microSD, fan).
