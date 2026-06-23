@@ -161,28 +161,26 @@ module gpio_relief(){
 
 module lid_closed(){ difference(){ lid_body(); slits(); gpio_relief(); } }
 
-OPEN_FRAME = 7;   // open-lid frame ring width (mm)
-OPEN_RIB_W = 5;   // X-rib width
+OPEN_FRAME = 7;     // open-lid border frame width (mm)
+HEX_R      = 4.8;   // honeycomb hex circumradius
+HEX_WALL   = 1.6;   // wall thickness between hexes
+// 2D honeycomb hole field (pointy-top hex grid)
+module honeycomb_2d(W,H,R,wall){
+    hx = R*sqrt(3); hy = R*1.5; rh = R - wall/sqrt(3);
+    for(j=[0:ceil(H/hy)+1], i=[0:ceil(W/hx)+1])
+        translate([i*hx + (j%2)*hx/2, j*hy]) circle(r=rh, $fn=6);
+}
+// Stylish ventilated lid: solid plate with a honeycomb vent field in the centre.
 module lid_open(){
+    b = OPEN_FRAME;
     difference(){
-        union(){
-            // FRAME: open the window in 2D first (robust), then extrude
-            translate([0,0,WALL_TOP]) linear_extrude(LID_TOP)
-                difference(){
-                    pcb_off(OUT);
-                    translate([OPEN_FRAME, OPEN_FRAME])
-                        square([PCB_W-2*OPEN_FRAME, PCB_D-2*OPEN_FRAME]);
-                }
-            lid_lip();
-            // X cross-ribs spanning the window, clipped to the lid footprint
+        lid_body();                       // full solid lid (plate + chamfer + clean lip ring)
+        // honeycomb holes, clipped to the central area inside the border
+        translate([0,0,WALL_TOP-1]) linear_extrude(LID_TOP+CHAM+3)
             intersection(){
-                translate([0,0,WALL_TOP]) linear_extrude(LID_TOP) pcb_off(OUT-1);
-                union() for(a=[1,-1])
-                    translate([PCB_W/2,PCB_D/2,WALL_TOP])
-                        rotate([0,0,a*atan2(PCB_D,PCB_W)])
-                            translate([-90,-OPEN_RIB_W/2,0]) cube([180,OPEN_RIB_W,LID_TOP]);
+                translate([b,b]) square([PCB_W-2*b, PCB_D-2*b]);
+                translate([b,b]) honeycomb_2d(PCB_W-2*b, PCB_D-2*b, HEX_R, HEX_WALL);
             }
-        }
         gpio_relief();
     }
 }
