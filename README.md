@@ -84,10 +84,14 @@ Open `rdk_x5_case.scad` and edit the `// PARAMETERS` block. Useful knobs:
 - [x] Default Lid — closed + cooling slits
 - [x] Open Lid — frame with X-cross ribs
 - [x] VESA Mount Lid — 60×60 M4 pattern
+- [x] Accurate port cutouts — every connector position extracted from the
+      official STEP model and verified against the real board mesh
+      (USB-A ×2, RJ45, HDMI, audio, USB-C ×2, 40-pin GPIO, microSD, fan).
+      See [connector_map.md](connector_map.md) and
+      `images/board_fit_verification.png`.
 - [ ] Camera Lid — MIPI CSI cable pass-through (planned)
 - [ ] DIN-rail Lid — industrial mount (community request welcome)
-- [ ] Print validation (PLA / PETG)
-- [ ] Connector cutouts refined from physical board measurements
+- [ ] Print validation on real hardware (PLA / PETG)
 - [ ] Thermal validation under load
 
 ## Disclaimer
