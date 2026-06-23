@@ -37,7 +37,7 @@ Common base: [`case_base.stl`](stl/case_base.stl) — works with all three lids.
 | Reference source | Official D-Robotics V1P0 DXF & STEP (`reference/`) |
 | Case footprint | ~89 × 60 × 24 mm |
 | PCB retention | Outer clamp (no PCB-side screws — preserves stock heatsink holes) |
-| Lid attachment | 4 × M3 + 4 × locating pins |
+| Lid attachment | **Snap / press-fit — no screws** (tunable via `SNAP_CLEAR`) |
 | Designed material | PLA / PETG (2.0 mm wall) |
 | License | CC BY 4.0 |
 

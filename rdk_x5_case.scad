@@ -22,6 +22,13 @@ LID_TOP=2.4;               // lid plate thickness
 LIP_DEPTH=3.0;             // lid locating lip depth (in the clear zone)
 LIP_W=1.8;
 CHAM=1.4;                  // top outer edge chamfer
+// --- press-fit (no screws) ---
+//  per-side clearance between lid lip and base cavity wall.
+//  0.10 = snug press fit (push to close, holds by friction).
+//  too tight (won't seat / cracks) -> raise toward 0.20
+//  too loose (lid falls off)       -> lower toward 0.05 or negative (interference)
+SNAP_CLEAR=0.10;
+LEAD_IN=0.8;               // lip bottom lead-in chamfer height (eases insertion)
 
 PCB_BOT=FLOOR+BOTTOM_CLEAR;
 PCB_TOP=PCB_BOT+PCB_T;
@@ -107,10 +114,19 @@ module case_base(){
 // ============================================================
 module lid_plate_2d(){ pcb_off(OUT); }
 module lid_lip(){
-    // sits in the clear zone (top LIP_DEPTH below WALL_TOP, above all conns)
-    translate([0,0,WALL_TOP-LIP_DEPTH])
-        linear_extrude(LIP_DEPTH)
-            difference(){ pcb_off(GAP-0.3); pcb_off(GAP-0.3-LIP_W); }
+    // press-fit lip in the clear zone (above all connectors).
+    lo = GAP - SNAP_CLEAR;        // outer offset -> press fit against cavity (pcb_off(GAP))
+    li = lo - LIP_W;             // inner offset
+    translate([0,0,WALL_TOP-LIP_DEPTH]){
+        // lead-in: bottom tapers inward so the lid starts easily, then grips
+        hull(){
+            linear_extrude(0.01) difference(){ pcb_off(lo-0.6); pcb_off(li); }
+            translate([0,0,LEAD_IN]) linear_extrude(0.01) difference(){ pcb_off(lo); pcb_off(li); }
+        }
+        // main grip body
+        translate([0,0,LEAD_IN])
+            linear_extrude(LIP_DEPTH-LEAD_IN) difference(){ pcb_off(lo); pcb_off(li); }
+    }
 }
 module lid_chamfer_top(){
     // chamfer the lid's own top outer edge
