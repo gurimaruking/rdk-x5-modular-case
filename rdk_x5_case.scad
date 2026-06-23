@@ -43,9 +43,11 @@ OUT = GAP+WALL;   // outer offset
 //  edge R(X+) L(X-) F(Y-) B(Y+); a along edge; z rel PCB top
 // ============================================================
 PORTS=[
- ["R", 1.0,19.3,-4,14.0,1,"RJ45 LAN"],
- ["R",21.0,37.5,-3,16.5,1,"USB-A stack1"],
- ["R",38.9,55.4,-3,16.5,1,"USB-A stack2"],
+ // right edge: spans tightened to the real connector bbox so the dividers
+ // between RJ45 / USB1 / USB2 stay ~2 mm thick (conns are only ~3.4 mm apart)
+ ["R", 1.8,18.7,-4,14.0,1,"RJ45 LAN"],
+ ["R",21.6,36.9,-3,16.5,1,"USB-A stack1"],
+ ["R",39.5,54.8,-3,16.5,1,"USB-A stack2"],
  ["L",33.0,50.0,-3, 6.6,0,"HDMI"],
  ["L",23.5,31.8,-3, 5.3,0,"Audio 3.5mm"],
  ["F", 5.7,16.7,-3, 3.7,0,"USB-C power"],
@@ -53,7 +55,7 @@ PORTS=[
  ["B", 6.0,59.0,-4,11.5,1,"40pin GPIO"],
  ["B",63.5,71.2,-3, 4.9,0,"Fan/PWR JST"],
 ];
-CLR=0.6;
+CLR=0.3;   // per-side opening clearance (tight: keeps port dividers thick)
 
 module port_cut(p){
     e=p[0]; a0=p[1]-CLR; a1=p[2]+CLR;
@@ -170,20 +172,31 @@ module lid_chamfer_frame(){
     }
 }
 
-VESA=60; VHOLE=4.5; VBOSS=9; VBOSS_H=4;
+// Mount pattern. NOTE: the board is only 56 mm deep, so a real VESA-75/100
+// monitor pattern does NOT fit. We use a 50 mm 4-hole pattern (M4) that sits
+// FULLY on the lid (bosses never overhang the edge). For true VESA-75/100,
+// print a separate adapter plate (roadmap).
+VESA=50; VHOLE=4.5; VBOSS=9; VBOSS_H=4;
+// safety: half-pattern + boss radius must stay inside the lid outline
+LID_HALF_Y = PCB_D/2 + (GAP+WALL);   // lid reaches this far from center in Y
+assert(VESA/2 + VBOSS/2 <= LID_HALF_Y,
+       "VESA pattern too large: front/back bosses would overhang the lid edge");
+
 module lid_vesa(){
     pts=[[PCB_W/2-VESA/2,PCB_D/2-VESA/2],[PCB_W/2+VESA/2,PCB_D/2-VESA/2],
          [PCB_W/2-VESA/2,PCB_D/2+VESA/2],[PCB_W/2+VESA/2,PCB_D/2+VESA/2]];
     difference(){
         union(){
             lid_body();
+            // bosses sit on top of the plate, fully supported
             for(p=pts) translate([p[0],p[1],WALL_TOP+LID_TOP-0.01]) cylinder(d=VBOSS,h=VBOSS_H);
         }
+        // M4 clearance through plate + boss
         for(p=pts) translate([p[0],p[1],WALL_TOP-1]) cylinder(d=VHOLE,h=LID_TOP+VBOSS_H+2);
         gpio_relief();
-        // light slits front & back strips
-        for(i=[0:6]){ translate([14+i*5,6,WALL_TOP-0.1]) cube([2.4,6,LID_TOP+1]);
-                      translate([14+i*5,PCB_D-12,WALL_TOP-0.1]) cube([2.4,6,LID_TOP+1]); }
+        // a few cooling slits down the centre line, clear of the bosses
+        for(i=[0:4]) translate([PCB_W/2-12+i*6, PCB_D/2-7, WALL_TOP-0.1])
+            cube([2.4,14,LID_TOP+1]);
     }
 }
 
