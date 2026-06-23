@@ -42,7 +42,10 @@ module pcb_poly(){
              [PCB_W,PCB_D-PCB_CH],[PCB_W-PCB_CH,PCB_D],
              [PCB_CH,PCB_D],[0,PCB_D-PCB_CH],[0,PCB_CH]]);
 }
-module pcb_off(d){ offset(r=d) pcb_poly(); }
+// NOTE: use offset(delta=) not offset(r=).  offset(r=negative) returns empty
+// on this polygon in OpenSCAD 0.21, which silently broke every inward offset
+// (lid lip ring, under-PCB recess, open-lid window). delta offsets reliably.
+module pcb_off(d){ offset(delta=d) pcb_poly(); }
 OUT = GAP+WALL;   // outer offset
 
 // ============================================================
@@ -115,15 +118,14 @@ module case_base(){
 module lid_plate_2d(){ pcb_off(OUT); }
 module lid_lip(){
     // press-fit lip in the clear zone (above all connectors).
+    // IMPORTANT: stays a RING at every level. (Never hull() a ring — the convex
+    // hull of an annulus is a solid disk, which would plug the open lid.)
     lo = GAP - SNAP_CLEAR;        // outer offset -> press fit against cavity (pcb_off(GAP))
     li = lo - LIP_W;             // inner offset
     translate([0,0,WALL_TOP-LIP_DEPTH]){
-        // lead-in: bottom tapers inward so the lid starts easily, then grips
-        hull(){
-            linear_extrude(0.01) difference(){ pcb_off(lo-0.6); pcb_off(li); }
-            translate([0,0,LEAD_IN]) linear_extrude(0.01) difference(){ pcb_off(lo); pcb_off(li); }
-        }
-        // main grip body
+        // lead-in: bottom ring inset on the OUTER face only (eases insertion)
+        linear_extrude(LEAD_IN) difference(){ pcb_off(lo-0.4); pcb_off(li); }
+        // main grip ring
         translate([0,0,LEAD_IN])
             linear_extrude(LIP_DEPTH-LEAD_IN) difference(){ pcb_off(lo); pcb_off(li); }
     }
@@ -159,32 +161,29 @@ module gpio_relief(){
 
 module lid_closed(){ difference(){ lid_body(); slits(); gpio_relief(); } }
 
+OPEN_FRAME = 7;   // open-lid frame ring width (mm)
+OPEN_RIB_W = 5;   // X-rib width
 module lid_open(){
     difference(){
         union(){
-            // outer frame only
-            difference(){
-                translate([0,0,WALL_TOP]) linear_extrude(LID_TOP-CHAM) lid_plate_2d();
-                translate([0,0,WALL_TOP-0.1]) linear_extrude(LID_TOP+1) pcb_off(OUT-7);
-            }
-            lid_chamfer_frame();
+            // FRAME: open the window in 2D first (robust), then extrude
+            translate([0,0,WALL_TOP]) linear_extrude(LID_TOP)
+                difference(){
+                    pcb_off(OUT);
+                    translate([OPEN_FRAME, OPEN_FRAME])
+                        square([PCB_W-2*OPEN_FRAME, PCB_D-2*OPEN_FRAME]);
+                }
             lid_lip();
-            // two cross ribs
-            for(a=[atan2(PCB_D,PCB_W),-atan2(PCB_D,PCB_W)])
-                translate([PCB_W/2,PCB_D/2,WALL_TOP])
-                    rotate([0,0,a]) translate([-PCB_W*0.62,-2,0]) cube([PCB_W*1.24,4,LID_TOP-CHAM]);
+            // X cross-ribs spanning the window, clipped to the lid footprint
+            intersection(){
+                translate([0,0,WALL_TOP]) linear_extrude(LID_TOP) pcb_off(OUT-1);
+                union() for(a=[1,-1])
+                    translate([PCB_W/2,PCB_D/2,WALL_TOP])
+                        rotate([0,0,a*atan2(PCB_D,PCB_W)])
+                            translate([-90,-OPEN_RIB_W/2,0]) cube([180,OPEN_RIB_W,LID_TOP]);
+            }
         }
         gpio_relief();
-    }
-}
-module lid_chamfer_frame(){
-    z=WALL_TOP+LID_TOP;
-    difference(){
-        hull(){
-            translate([0,0,z-CHAM]) linear_extrude(0.01) pcb_off(OUT);
-            translate([0,0,z-0.01]) linear_extrude(0.01) pcb_off(OUT-CHAM);
-        }
-        translate([0,0,WALL_TOP-1]) linear_extrude(LID_TOP+2) pcb_off(OUT-7);
     }
 }
 
