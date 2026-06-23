@@ -201,11 +201,12 @@ module lid_vesa(){
     difference(){
         union(){
             lid_body();
-            // bosses sit on top of the plate, fully supported
-            for(p=pts) translate([p[0],p[1],WALL_TOP+LID_TOP-0.01]) cylinder(d=VBOSS,h=VBOSS_H);
+            // bosses on the UNDERSIDE (inside the case) so the lid still prints
+            // top-face-down flat. They sit in the clear zone, away from tall ports.
+            for(p=pts) translate([p[0],p[1],WALL_TOP-VBOSS_H]) cylinder(d=VBOSS,h=VBOSS_H+0.01);
         }
-        // M4 clearance through plate + boss
-        for(p=pts) translate([p[0],p[1],WALL_TOP-1]) cylinder(d=VHOLE,h=LID_TOP+VBOSS_H+2);
+        // M4 clearance + countersink from the top (visible) face, through plate + boss
+        for(p=pts) translate([p[0],p[1],WALL_TOP-VBOSS_H-1]) cylinder(d=VHOLE,h=LID_TOP+VBOSS_H+3);
         gpio_relief();
         // a few cooling slits down the centre line, clear of the bosses
         for(i=[0:4]) translate([PCB_W/2-12+i*6, PCB_D/2-7, WALL_TOP-0.1])
@@ -231,3 +232,9 @@ else if(SHOW==5){
     translate([0,0,14]) color([0.30,0.50,0.78,0.92]) lid_closed();
 }
 else if(SHOW==6) board_overlay();
+// ---- PRINT-READY orientations (flat on Z=0, optimal face down, no support) ----
+// base: floor already down. lids: flipped top-face-down (lip points up).
+else if(SHOW==11) translate([0,0,0]) case_base();
+else if(SHOW==12) translate([0,0,WALL_TOP+LID_TOP]) rotate([180,0,0]) lid_closed();
+else if(SHOW==13) translate([0,0,WALL_TOP+LID_TOP]) rotate([180,0,0]) lid_open();
+else if(SHOW==14) translate([0,0,WALL_TOP+LID_TOP]) rotate([180,0,0]) lid_vesa();
