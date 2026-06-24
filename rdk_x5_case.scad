@@ -14,7 +14,7 @@
 
 // ---------- core dimensions ----------
 PCB_W=85; PCB_D=56; PCB_CH=3; PCB_T=1.6;
-WALL=2.2; FLOOR=2.0; GAP=0.45;
+WALL=2.2; FLOOR=2.0; GAP=0.70;   // v3: 0.45→0.70 (実機テストで基板キチキチ→広げた)
 BOTTOM_CLEAR=3.5;          // under PCB (pins, microSD)
 TOP_CLEAR=20.0;            // above PCB top (tall USB ~16.5 + headroom for lip)
 LEDGE=2.0;                 // perimeter ledge PCB rests on
@@ -25,9 +25,10 @@ CHAM=1.4;                  // top outer edge chamfer
 // --- press-fit (no screws) ---
 //  per-side clearance between lid lip and base cavity wall.
 //  0.10 = snug press fit (push to close, holds by friction).
-//  too tight (won't seat / cracks) -> raise toward 0.20
-//  too loose (lid falls off)       -> lower toward 0.05 or negative (interference)
-SNAP_CLEAR=0.10;
+//  too tight (won't seat / cracks) -> raise toward 0.10
+//  too loose (lid falls off)       -> lower / negative (interference)
+//  v3: 実機テストで「全部ゆるゆる」→ -0.10(0.1mm干渉)に。緩ければさらに下げる
+SNAP_CLEAR=-0.10;
 LEAD_IN=0.8;               // lip bottom lead-in chamfer height (eases insertion)
 
 PCB_BOT=FLOOR+BOTTOM_CLEAR;
@@ -55,17 +56,19 @@ OUT = GAP+WALL;   // outer offset
 PORTS=[
  // right edge: spans tightened to the real connector bbox so the dividers
  // between RJ45 / USB1 / USB2 stay ~2 mm thick (conns are only ~3.4 mm apart)
- ["R", 1.8,18.7,-4,14.0,1,"RJ45 LAN"],
- ["R",21.6,36.9,-3,16.5,1,"USB-A stack1"],
- ["R",39.5,54.8,-3,16.5,1,"USB-A stack2"],
- ["L",33.0,50.0,-3, 6.6,0,"HDMI"],
- ["L",23.5,31.8,-3, 5.3,0,"Audio 3.5mm"],
+ // v3: right openings tightened to the connectors so USB/RJ45 dividers reach ~2.8 mm
+ ["R", 2.0,18.6,-4,14.0,1,"RJ45 LAN"],
+ ["R",21.9,36.6,-3,16.5,1,"USB-A stack1"],
+ ["R",39.8,54.5,-3,16.5,1,"USB-A stack2"],
+ // v3: HDMI+Audio MERGED into one opening (the 1.2 mm wall between them was too
+ // fragile to print). Covers Y23.5..50, tall enough for HDMI.
+ ["L",23.0,50.0,-3, 6.8,0,"HDMI + Audio"],
  ["F", 5.7,16.7,-3, 3.7,0,"USB-C power"],
  ["F",20.3,31.3,-3, 3.7,0,"USB-C data"],
  ["B", 6.0,59.0,-4,11.5,1,"40pin GPIO"],
  ["B",63.5,71.2,-3, 4.9,0,"Fan/PWR JST"],
 ];
-CLR=0.3;   // per-side opening clearance (tight: keeps port dividers thick)
+CLR=0.25;  // per-side opening clearance (tighter -> thicker port dividers)
 
 module port_cut(p){
     e=p[0]; a0=p[1]-CLR; a1=p[2]+CLR;
