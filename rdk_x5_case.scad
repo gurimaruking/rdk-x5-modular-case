@@ -340,6 +340,20 @@ else if(SHOW==12) translate([0,0,WALL_TOP+LID_TOP]) rotate([180,0,0]) lid_closed
 else if(SHOW==13) translate([0,0,WALL_TOP+LID_TOP]) rotate([180,0,0]) lid_open();
 else if(SHOW==14) translate([0,0,WALL_TOP+LID_TOP]) rotate([180,0,0]) lid_vesa();
 else if(SHOW==25) translate([0,0,WALL_TOP+LID_TOP]) rotate([180,0,0]) lid_fan();
+// ---- HERO renders (opaque base + real board mesh, for README / MakerWorld) ----
+// 20 board-in-base | 21 closed lid floating | 22 fan lid floating | 23 open lid floating
+else if(SHOW==20){
+    color([0.84,0.86,0.89]) case_base();
+    color([0.20,0.55,0.30]) board_overlay();
+}
+else if(SHOW>=21 && SHOW<=23){
+    color([0.84,0.86,0.89]) case_base();
+    color([0.20,0.55,0.30]) board_overlay();
+    translate([0,0,26])
+        if(SHOW==21) color([0.30,0.50,0.78]) lid_closed();
+        else if(SHOW==22) color([0.55,0.45,0.80]) lid_fan();
+        else color([0.30,0.62,0.40]) lid_open();
+}
 // ---- ALL PARTS ON ONE PLATE (print-oriented; min corner normalized to a 2x3 grid) ----
 else if(SHOW==99){
     PX=96; PY=68; O=GAP+WALL;        // cell pitch + outer-offset normalizer
