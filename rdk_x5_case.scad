@@ -27,13 +27,13 @@ CHAM=1.4;                  // top outer edge chamfer
 //  0.10 = snug press fit (push to close, holds by friction).
 //  v4: スリップフィット(0.10)に戻し、保持は下記のsnap bead/grooveで行う
 //  → 蓋はスッと入って、最後にパチッと噛んで外れにくい
-SNAP_CLEAR=0.05;   // v5: 0.10→0.05 (蓋をもっとタイトに。リップが壁に密着する方向)
+SNAP_CLEAR=0.02;   // v5.1: 0.05→0.02 (蓋がまだ気持ち緩い→さらに密着)
 LEAD_IN=0.8;               // lip bottom lead-in chamfer height (eases insertion)
 // --- snap-fit ring (base=凸リッジ / lid=凹溝, 一周) ---
 //  ベース側キャビティ壁に一周のリッジ、蓋リップ外面に一周の溝。押し込むと
 //  リップが少したわんでリッジを乗り越え、溝にカチッと落ちて保持する。
 //  きつくて閉まらない→SNAP_BEAD下げる / 緩い→上げる
-SNAP_BEAD=0.45;            // v5: 0.35→0.45 (スナップのカチッと感を強めに). ridge protrusion = groove engagement depth
+SNAP_BEAD=0.55;            // v5.1: 0.45→0.55 (まだ緩いのでカチッと更に強く). ridge protrusion = groove engagement depth
 
 PCB_BOT=FLOOR+BOTTOM_CLEAR;
 PCB_TOP=PCB_BOT+PCB_T;
@@ -73,6 +73,10 @@ PORTS=[
  ["L",23.0,50.0,-3, 6.8,0,"HDMI + Audio"],
  ["F", 5.7,16.7,-3, 3.7,0,"USB-C power"],
  ["F",20.3,31.3,-3, 3.7,0,"USB-C data"],
+ // v5.1: UART debug connector on the front edge (silk label "UART" at X≈42.9 in
+ // the official DXF, between the MIPI-DSI and CSI connectors). The front wall
+ // had no opening here, so the debug serial cable couldn't be plugged in.
+ ["F",40.8,47.5,-3, 5.0,0,"UART debug"],
  ["B", 6.0,59.0,-4,11.5,1,"40pin GPIO"],
  ["B",63.5,71.2,-3, 4.9,0,"Fan/PWR JST"],
 ];
