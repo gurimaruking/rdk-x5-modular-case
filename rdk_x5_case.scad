@@ -73,10 +73,12 @@ PORTS=[
  ["L",23.0,50.0,-3, 6.8,0,"HDMI + Audio"],
  ["F", 5.7,16.7,-3, 3.7,0,"USB-C power"],
  ["F",20.3,31.3,-3, 3.7,0,"USB-C data"],
- // v5.1: UART debug connector on the front edge (silk label "UART" at X≈42.9 in
- // the official DXF, between the MIPI-DSI and CSI connectors). The front wall
- // had no opening here, so the debug serial cable couldn't be plugged in.
- ["F",40.8,47.5,-3, 5.0,0,"UART debug"],
+ // v5.2: UART debug = a Micro-USB receptacle (Molex 1050170001, on-board CH340
+ // USB-serial). Measured from the board mesh as the 7.5 mm-wide connector that
+ // protrudes past the front edge at X 34.71–42.21 (the DXF silk "UART" text at
+ // X≈42.9 is printed to the RIGHT of the connector, which misled v5.1). Plug a
+ // Micro-USB cable straight in (115200 8N1) for the boot/kernel console.
+ ["F",33.4,43.5,-3, 4.0,0,"UART (Micro-USB)"],
  ["B", 6.0,59.0,-4,11.5,1,"40pin GPIO"],
  ["B",63.5,71.2,-3, 4.9,0,"Fan/PWR JST"],
 ];
