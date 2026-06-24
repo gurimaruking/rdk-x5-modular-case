@@ -14,7 +14,7 @@
 
 // ---------- core dimensions ----------
 PCB_W=85; PCB_D=56; PCB_CH=3; PCB_T=1.6;
-WALL=2.2; FLOOR=2.0; GAP=0.70;   // v3: 0.45→0.70 (実機テストで基板キチキチ→広げた)
+WALL=2.2; FLOOR=2.0; GAP=0.80;   // v4: 0.70→0.80 (基板がまだ少し硬い→さらに広げた)
 BOTTOM_CLEAR=3.5;          // under PCB (pins, microSD)
 TOP_CLEAR=20.0;            // above PCB top (tall USB ~16.5 + headroom for lip)
 LEDGE=2.0;                 // perimeter ledge PCB rests on
@@ -25,11 +25,16 @@ CHAM=1.4;                  // top outer edge chamfer
 // --- press-fit (no screws) ---
 //  per-side clearance between lid lip and base cavity wall.
 //  0.10 = snug press fit (push to close, holds by friction).
-//  too tight (won't seat / cracks) -> raise toward 0.10
-//  too loose (lid falls off)       -> lower / negative (interference)
-//  v3: 実機テストで「全部ゆるゆる」→ -0.10(0.1mm干渉)に。緩ければさらに下げる
-SNAP_CLEAR=-0.10;
+//  v4: スリップフィット(0.10)に戻し、保持は下記のsnap bead/grooveで行う
+//  → 蓋はスッと入って、最後にパチッと噛んで外れにくい
+SNAP_CLEAR=0.10;
 LEAD_IN=0.8;               // lip bottom lead-in chamfer height (eases insertion)
+// --- snap-fit ring (base=凸リッジ / lid=凹溝, 一周) ---
+//  ベース側キャビティ壁に一周のリッジ、蓋リップ外面に一周の溝。押し込むと
+//  リップが少したわんでリッジを乗り越え、溝にカチッと落ちて保持する。
+//  きつくて閉まらない→SNAP_BEAD下げる / 緩い→上げる
+SNAP_BEAD=0.35;            // ridge protrusion = groove engagement depth
+SNAP_Z=WALL_TOP-1.6;       // engagement height (within the lip zone)
 
 PCB_BOT=FLOOR+BOTTOM_CLEAR;
 PCB_TOP=PCB_BOT+PCB_T;
@@ -80,11 +85,36 @@ module port_cut(p){
     else if(e=="B") translate([a0,PCB_D-2,z0]) cube([a1-a0,thru,z1-z0]);
 }
 module microsd_slot(){
-    z0=PCB_TOP-3.6; z1=PCB_TOP-1.0;
-    translate([-(WALL+GAP)-1,19.5,z0]) cube([WALL+GAP+4,13.0,z1-z0]);
+    // v4: 拡大(取り出しやすく)+ 指がかりの半円スカラップ
+    z0=PCB_TOP-4.0; z1=PCB_TOP-0.6;
+    translate([-(WALL+GAP)-1,18.5,z0]) cube([WALL+GAP+4,15.0,z1-z0]);
+    // finger scallop: 壁の縁に半円の切り欠き(爪でカードを摘まめる)
+    translate([-(WALL+GAP)-1,26.0,z0+(z1-z0)/2]) rotate([0,90,0])
+        cylinder(d=9, h=WALL+GAP+4, $fn=40);
 }
 module floor_vents(){ for(i=[0:6],j=[0:5]) translate([32+i*4,18+j*4,-1]) cylinder(d=2.4,h=FLOOR+2); }
 module foot_recess(){ for(p=[[9,8],[76,8],[9,48],[76,48]]) translate([p[0],p[1],-0.1]) cylinder(d=8,h=0.8); }
+
+// snap ridge on the base cavity wall (一周凸). Triangular-ish for easy ride-over.
+// Clipped at the port openings (tall USB/GPIO notches have no wall to back it).
+module snap_bead(){
+    difference(){
+        union(){
+            translate([0,0,SNAP_Z-0.5]) linear_extrude(0.5)
+                difference(){ pcb_off(GAP); pcb_off(GAP-SNAP_BEAD*0.5); }   // lower ramp
+            translate([0,0,SNAP_Z]) linear_extrude(0.9)
+                difference(){ pcb_off(GAP); pcb_off(GAP-SNAP_BEAD); }       // full ridge
+            translate([0,0,SNAP_Z+0.9]) linear_extrude(0.45)
+                difference(){ pcb_off(GAP); pcb_off(GAP-SNAP_BEAD*0.5); }   // upper ramp
+        }
+        for(p=PORTS) port_cut(p);   // no bead across the open-top port notches
+    }
+}
+// matching groove cut into the lid lip outer face (一周凹)
+module snap_groove(){
+    translate([0,0,SNAP_Z-0.35]) linear_extrude(1.6)
+        difference(){ pcb_off(GAP-SNAP_CLEAR+0.3); pcb_off(GAP-SNAP_CLEAR-SNAP_BEAD-0.15); }
+}
 
 // chamfered top rim helper (outer top edge bevel)
 module top_chamfer(offv){
@@ -98,20 +128,25 @@ module top_chamfer(offv){
 // BASE
 // ============================================================
 module case_base(){
-    difference(){
-        union(){
-            linear_extrude(WALL_TOP-CHAM) pcb_off(OUT);
-            top_chamfer(OUT);
+    union(){
+        difference(){
+            union(){
+                linear_extrude(WALL_TOP-CHAM) pcb_off(OUT);
+                top_chamfer(OUT);
+            }
+            // cavity for PCB + components
+            translate([0,0,PCB_BOT]) linear_extrude(WALL_TOP) pcb_off(GAP);
+            // under-PCB recess (PCB rests on LEDGE ring)
+            translate([0,0,FLOOR]) linear_extrude(BOTTOM_CLEAR+0.01) pcb_off(GAP-LEDGE);
+            // accurate ports
+            for(p=PORTS) port_cut(p);
+            microsd_slot();
+            floor_vents();
+            foot_recess();
         }
-        // cavity for PCB + components
-        translate([0,0,PCB_BOT]) linear_extrude(WALL_TOP) pcb_off(GAP);
-        // under-PCB recess (PCB rests on LEDGE ring)
-        translate([0,0,FLOOR]) linear_extrude(BOTTOM_CLEAR+0.01) pcb_off(GAP-LEDGE);
-        // accurate ports
-        for(p=PORTS) port_cut(p);
-        microsd_slot();
-        floor_vents();
-        foot_recess();
+        // snap ridge inside the cavity (engages the lid groove). Clipped so it
+        // doesn't grow into the port openings region too aggressively.
+        snap_bead();
     }
 }
 
@@ -162,7 +197,7 @@ module gpio_relief(){
     translate([6,PCB_D-3,WALL_TOP-0.1]) cube([53,OUT+4,LID_TOP+1]);
 }
 
-module lid_closed(){ difference(){ lid_body(); slits(); gpio_relief(); } }
+module lid_closed(){ difference(){ lid_body(); slits(); gpio_relief(); snap_groove(); } }
 
 OPEN_FRAME = 7;     // open-lid border frame width (mm)
 HEX_R      = 4.8;   // honeycomb hex circumradius
@@ -185,6 +220,7 @@ module lid_open(){
                 translate([b,b]) honeycomb_2d(PCB_W-2*b, PCB_D-2*b, HEX_R, HEX_WALL);
             }
         gpio_relief();
+        snap_groove();
     }
 }
 
@@ -214,6 +250,7 @@ module lid_vesa(){
         // a few cooling slits down the centre line, clear of the bosses
         for(i=[0:4]) translate([PCB_W/2-12+i*6, PCB_D/2-7, WALL_TOP-0.1])
             cube([2.4,14,LID_TOP+1]);
+        snap_groove();
     }
 }
 
