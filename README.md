@@ -88,11 +88,12 @@ Open `rdk_x5_case.scad` and edit the `// PARAMETERS` block. Useful knobs:
 
 | Variable | Default | When to change |
 |----------|---------|---------------|
-| `PCB_FIT_GAP` | 0.4 mm | Reduce to 0.3 for snug fit, raise to 0.6 if too tight |
-| `TOP_CLEAR` | 18 mm | Increase to 25 mm if using a tall heatsink + fan |
-| `WALL` | 2.0 mm | Drop to 1.6 for ABS, raise to 3.0 for TPU |
+| `GAP` | 1.0 mm | Per-side PCB clearance. Lower (0.8) for a snug board, raise if it binds. Printers with elephant's foot may need more — or enable foot compensation in the slicer |
+| `SNAP_CLEAR` | 0.05 mm | Lid lip press-fit. Lower = tighter lid; negative = interference |
+| `SNAP_BEAD` | 0.45 mm | Snap ridge/groove engagement depth. Raise for a firmer click, lower if the lid won't close |
+| `TOP_CLEAR` | 20 mm | Increase if using a tall heatsink + fan |
+| `WALL` | 2.2 mm | Drop to 1.6 for ABS, raise to 3.0 for TPU |
 | `VESA` | 50 (50×50 M4) | Max that fits on the 56 mm-deep lid; an assert guards against overhang |
-| `SLIT_W`, `SLIT_GAP` | 2.5, 3.0 | Tune slit density on Default Lid |
 
 ## Roadmap
 

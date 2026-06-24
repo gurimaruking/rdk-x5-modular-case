@@ -14,7 +14,7 @@
 
 // ---------- core dimensions ----------
 PCB_W=85; PCB_D=56; PCB_CH=3; PCB_T=1.6;
-WALL=2.2; FLOOR=2.0; GAP=0.80;   // v4: 0.70→0.80 (基板がまだ少し硬い→さらに広げた)
+WALL=2.2; FLOOR=2.0; GAP=1.00;   // v5: 0.80→1.00 (実機印刷で基板がまだギチギチ・底まで座らない→さらに広げた)
 BOTTOM_CLEAR=3.5;          // under PCB (pins, microSD)
 TOP_CLEAR=20.0;            // above PCB top (tall USB ~16.5 + headroom for lip)
 LEDGE=2.0;                 // perimeter ledge PCB rests on
@@ -27,13 +27,13 @@ CHAM=1.4;                  // top outer edge chamfer
 //  0.10 = snug press fit (push to close, holds by friction).
 //  v4: スリップフィット(0.10)に戻し、保持は下記のsnap bead/grooveで行う
 //  → 蓋はスッと入って、最後にパチッと噛んで外れにくい
-SNAP_CLEAR=0.10;
+SNAP_CLEAR=0.05;   // v5: 0.10→0.05 (蓋をもっとタイトに。リップが壁に密着する方向)
 LEAD_IN=0.8;               // lip bottom lead-in chamfer height (eases insertion)
 // --- snap-fit ring (base=凸リッジ / lid=凹溝, 一周) ---
 //  ベース側キャビティ壁に一周のリッジ、蓋リップ外面に一周の溝。押し込むと
 //  リップが少したわんでリッジを乗り越え、溝にカチッと落ちて保持する。
 //  きつくて閉まらない→SNAP_BEAD下げる / 緩い→上げる
-SNAP_BEAD=0.35;            // ridge protrusion = groove engagement depth
+SNAP_BEAD=0.45;            // v5: 0.35→0.45 (スナップのカチッと感を強めに). ridge protrusion = groove engagement depth
 
 PCB_BOT=FLOOR+BOTTOM_CLEAR;
 PCB_TOP=PCB_BOT+PCB_T;
@@ -195,9 +195,14 @@ module slits(){
     translate([12,(PCB_D-len)/2,WALL_TOP-0.1])
         for(i=[0:n-1]) translate([i*sp,0,0]) cube([sw,len,LID_TOP+1]);
 }
-// GPIO ribbon relief notch in the lid back edge (so a ribbon can exit up/back)
+// GPIO ribbon relief notch in the lid back edge (so a ribbon can exit up/back).
+// IMPORTANT: cut through the locating LIP too (not just the top plate). The lip
+// is a downward ring; over the GPIO the base port is open-top (no wall), so the
+// lip there grips nothing and the leftover bar just blocks the ribbon. Extend
+// the cut down past the lip bottom to fully clear the GPIO area.
 module gpio_relief(){
-    translate([6,PCB_D-3,WALL_TOP-0.1]) cube([53,OUT+4,LID_TOP+1]);
+    translate([6,PCB_D-3,WALL_TOP-LIP_DEPTH-0.1])
+        cube([53,OUT+4,LIP_DEPTH+LID_TOP+1]);
 }
 
 module lid_closed(){ difference(){ lid_body(); slits(); gpio_relief(); snap_groove(); } }
