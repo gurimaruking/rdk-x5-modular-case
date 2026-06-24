@@ -4,7 +4,14 @@
 > Fully parametric OpenSCAD source. One base, four swappable lids.
 > Licensed under **CC BY 4.0**.
 
-![Assembly preview — base + default lid + PCB](images/assembly_preview.png)
+![RDK X5 seated in the base — every port lined up](images/hero_board_in_case.png)
+
+<p align="center">
+  <img src="images/hero_closed_exploded.png" width="49%" alt="Closed lid snapping on">
+  <img src="images/hero_fan_exploded.png" width="49%" alt="Fan lid snapping on">
+</p>
+
+> Snap-on lids over a board held by an outer clamp — no PCB-side screws.
 
 ## Why this exists
 
