@@ -1,7 +1,7 @@
 # RDK X5 Modular Case
 
 > **The first open-source 3D-printable case for D-Robotics RDK X5 8GB.**
-> Fully parametric OpenSCAD source. One base, three swappable lids.
+> Fully parametric OpenSCAD source. One base, four swappable lids.
 > Licensed under **CC BY 4.0**.
 
 ![Assembly preview — base + default lid + PCB](images/assembly_preview.png)
@@ -17,15 +17,28 @@ modular design.
 Originally built as a byproduct of [Project Korosuke (コロ助)](https://github.com/Robostadion/corosuke-robot),
 an animatronic robot competing in the **D-Robotics Robotics Dream Keeper Challenge**.
 
-## One base, three lids
+## One base, four lids
 
 | Lid | Preview | STL | Use case |
 |-----|---------|-----|----------|
 | **Default** (closed, cooling slits) | ![](images/lid_default.png) | [`lid_default.stl`](stl/lid_default.stl) | Everyday use, dust protection, mild cooling |
-| **Open** (frame + X ribs) | ![](images/lid_open.png) | [`lid_open.stl`](stl/lid_open.stl) | Maker projects, full heatsink exposure, max airflow |
+| **Open** (honeycomb vent) | ![](images/lid_open.png) | [`lid_open.stl`](stl/lid_open.stl) | Maker projects, full heatsink exposure, max airflow |
 | **VESA Mount** (50×50 M4) | ![](images/lid_vesa.png) | [`lid_vesa.stl`](stl/lid_vesa.stl) | 50 mm 4-hole bracket mount (board is too small for full VESA-75) |
+| **Fan** (40 mm fan mount) | ![](images/lid_fan.png) | [`lid_fan.stl`](stl/lid_fan.stl) | Active cooling — mount a 40 mm fan (e.g. 4010) over a honeycomb intake grille |
 
-Common base: [`case_base.stl`](stl/case_base.stl) — works with all three lids.
+Common base: [`case_base.stl`](stl/case_base.stl) — works with all four lids.
+
+### Powering the fan
+
+The **Fan lid** takes a standard 40 mm fan (40×40, 10 mm thick — e.g. a 5 V 4010)
+held by 4× M3 screws on the 32 mm pattern. The center honeycomb doubles as a
+finger guard and intake grille; the fan blows down onto the heatsink.
+
+> ⚠️ The RDK X5's onboard fan header (**J15**) is a JST-SH **1.0 mm 2-pin** and
+> is too small for most hobby-fan plugs. The simplest reliable hookup is the
+> **40-pin GPIO header**: fan **+ (red) → pin 4 (5V)**, **− (black) → pin 6 (GND)**.
+> This runs the fan full-speed whenever the board is powered. Measured drop on a
+> bare board: idle DDR/CPU/BPU **66 °C → ~49 °C** with a 5 V 4010.
 
 ![Base](images/case_base.png)
 
@@ -47,10 +60,12 @@ Requires [OpenSCAD](https://openscad.org/) 2021.01 or newer.
 
 ```bash
 # Render all parts in one go
-openscad -o stl/case_base.stl   -D 'SHOW=1' rdk_x5_case.scad
-openscad -o stl/lid_default.stl -D 'SHOW=2' rdk_x5_case.scad
-openscad -o stl/lid_open.stl    -D 'SHOW=3' rdk_x5_case.scad
-openscad -o stl/lid_vesa.stl    -D 'SHOW=4' rdk_x5_case.scad
+openscad -o stl/case_base.stl   -D 'SHOW=11' rdk_x5_case.scad
+openscad -o stl/lid_default.stl -D 'SHOW=12' rdk_x5_case.scad
+openscad -o stl/lid_open.stl    -D 'SHOW=13' rdk_x5_case.scad
+openscad -o stl/lid_vesa.stl    -D 'SHOW=14' rdk_x5_case.scad
+openscad -o stl/lid_fan.stl     -D 'SHOW=25' rdk_x5_case.scad
+# (SHOW=11–14,25 = print-ready, flat on Z=0. SHOW=1–4,15 = design orientation.)
 ```
 
 Or run `./build_all.sh` (Linux/macOS) / `build_all.ps1` (Windows).
@@ -84,6 +99,7 @@ Open `rdk_x5_case.scad` and edit the `// PARAMETERS` block. Useful knobs:
 - [x] Default Lid — closed + cooling slits
 - [x] Open Lid — frame with X-cross ribs
 - [x] VESA Mount Lid — 50×50 M4 pattern (bosses fully supported on the lid)
+- [x] Fan Lid — 40 mm fan mount (32 mm M3 pattern) with honeycomb intake grille
 - [x] Accurate port cutouts — every connector position extracted from the
       official STEP model and verified against the real board mesh
       (USB-A ×2, RJ45, HDMI, audio, USB-C ×2, 40-pin GPIO, microSD, fan).

@@ -34,11 +34,14 @@ LEAD_IN=0.8;               // lip bottom lead-in chamfer height (eases insertion
 //  リップが少したわんでリッジを乗り越え、溝にカチッと落ちて保持する。
 //  きつくて閉まらない→SNAP_BEAD下げる / 緩い→上げる
 SNAP_BEAD=0.35;            // ridge protrusion = groove engagement depth
-SNAP_Z=WALL_TOP-1.6;       // engagement height (within the lip zone)
 
 PCB_BOT=FLOOR+BOTTOM_CLEAR;
 PCB_TOP=PCB_BOT+PCB_T;
 WALL_TOP=PCB_TOP+TOP_CLEAR;
+// NOTE: SNAP_Z depends on WALL_TOP, so it MUST be defined AFTER it. Defining it
+// earlier left WALL_TOP undefined at that point -> SNAP_Z=undef -> snap_bead /
+// snap_groove silently rendered empty (a likely cause of the loose-lid feel).
+SNAP_Z=WALL_TOP-1.6;       // engagement height (within the lip zone)
 
 $fn = $preview ? 40 : 110;
 
@@ -255,9 +258,55 @@ module lid_vesa(){
 }
 
 // ============================================================
+// FAN LID — 40 mm fan mount (e.g. 4010: 40x40x10, 5V, 0.12A)
+//  Central honeycomb intake grille (guard + airflow, matches lid_open style)
+//  + 4x M3 holes at the 40 mm-fan 32 mm square pattern, with underside bosses
+//  for thread engagement so the lid still prints top-face-down flat.
+//  Fan sits on the TOP face and blows down onto the heatsink. Power the fan
+//  from the 40-pin header 5V (pin 4) + GND (pin 6) — RDK X5's onboard J15 is a
+//  JST-SH 1.0 mm 2-pin, which this fan's 2.5 mm plug does not fit.
+// ============================================================
+FAN_SIZE   = 40;     // fan body (40 mm fan)
+FAN_HOLE   = 32;     // screw-hole spacing (standard 40 mm fan)
+FAN_BORE   = 37;     // central airflow opening diameter (≈ blade sweep)
+FAN_SCREW  = 2.75;   // M3 self-tap pilot hole through the boss
+FAN_BOSS   = 6.0;    // boss outer diameter
+FAN_BOSS_H = 3.0;    // boss height below the lid plate (adds thread depth)
+module lid_fan(){
+    cx=PCB_W/2; cy=PCB_D/2;
+    pts=[[cx-FAN_HOLE/2,cy-FAN_HOLE/2],[cx+FAN_HOLE/2,cy-FAN_HOLE/2],
+         [cx-FAN_HOLE/2,cy+FAN_HOLE/2],[cx+FAN_HOLE/2,cy+FAN_HOLE/2]];
+    // safety: fan body must sit on the lid without overhanging the (56 mm-deep) edge
+    assert(FAN_SIZE/2 <= PCB_D/2 + (GAP+WALL),
+           "Fan too large: body would overhang the lid edge");
+    difference(){
+        union(){
+            lid_body();
+            // thread bosses on the UNDERSIDE (clear zone, above the heatsink),
+            // so the lid prints top-face-down flat like the VESA lid.
+            for(p=pts) translate([p[0],p[1],WALL_TOP-FAN_BOSS_H])
+                cylinder(d=FAN_BOSS,h=FAN_BOSS_H+0.01);
+        }
+        // honeycomb intake grille, clipped to a circle under the fan
+        translate([0,0,WALL_TOP-1]) linear_extrude(LID_TOP+CHAM+3)
+            intersection(){
+                translate([cx,cy]) circle(d=FAN_BORE);
+                honeycomb_2d(PCB_W, PCB_D, HEX_R*0.8, HEX_WALL);
+            }
+        // M3 pilot holes through plate + boss
+        for(p=pts) translate([p[0],p[1],WALL_TOP-FAN_BOSS_H-1])
+            cylinder(d=FAN_SCREW,h=LID_TOP+FAN_BOSS_H+3);
+        gpio_relief();
+        snap_groove();
+    }
+}
+
+// ============================================================
 // RENDER SWITCH
-// 0 base+board verify | 1 base | 2 closed | 3 open | 4 vesa
+// 0 base+board verify | 1 base | 2 closed | 3 open | 4 vesa | 15 fan
 // 5 assembly(base+closed floated) | 6 board only
+// print-ready: 11 base | 12 closed | 13 open | 14 vesa | 25 fan
+// 99 ALL-ON-ONE-PLATE (base + 4 lids, print-oriented, for MakerWorld upload)
 // ============================================================
 SHOW=5;
 module board_overlay(){ translate([0,0,PCB_TOP]) import("reference/rdk_x5_board.stl"); }
@@ -267,6 +316,7 @@ else if(SHOW==1) color([0.82,0.84,0.87]) case_base();
 else if(SHOW==2) color([0.30,0.50,0.78]) lid_closed();
 else if(SHOW==3) color([0.30,0.62,0.40]) lid_open();
 else if(SHOW==4) color([0.85,0.70,0.25]) lid_vesa();
+else if(SHOW==15) color([0.55,0.45,0.80]) lid_fan();
 else if(SHOW==5){
     color([0.82,0.84,0.87]) case_base();
     translate([0,0,14]) color([0.30,0.50,0.78,0.92]) lid_closed();
@@ -278,3 +328,16 @@ else if(SHOW==11) translate([0,0,0]) case_base();
 else if(SHOW==12) translate([0,0,WALL_TOP+LID_TOP]) rotate([180,0,0]) lid_closed();
 else if(SHOW==13) translate([0,0,WALL_TOP+LID_TOP]) rotate([180,0,0]) lid_open();
 else if(SHOW==14) translate([0,0,WALL_TOP+LID_TOP]) rotate([180,0,0]) lid_vesa();
+else if(SHOW==25) translate([0,0,WALL_TOP+LID_TOP]) rotate([180,0,0]) lid_fan();
+// ---- ALL PARTS ON ONE PLATE (print-oriented; min corner normalized to a 2x3 grid) ----
+else if(SHOW==99){
+    PX=96; PY=68; O=GAP+WALL;        // cell pitch + outer-offset normalizer
+    // base (already floor-down): min corner (-O,-O) -> cell origin
+    translate([0*PX+O, 0*PY+O, 0]) color([0.82,0.84,0.87]) case_base();
+    // lids: print-oriented (flip top-face-down). After rotate([180]) the Y min
+    // is -(PCB_D+O), so shift by (PCB_D+O) to land the min corner on the cell.
+    translate([1*PX+O, 0*PY+(PCB_D+O), WALL_TOP+LID_TOP]) rotate([180,0,0]) color([0.30,0.50,0.78]) lid_closed();
+    translate([0*PX+O, 1*PY+(PCB_D+O), WALL_TOP+LID_TOP]) rotate([180,0,0]) color([0.30,0.62,0.40]) lid_open();
+    translate([1*PX+O, 1*PY+(PCB_D+O), WALL_TOP+LID_TOP]) rotate([180,0,0]) color([0.85,0.70,0.25]) lid_vesa();
+    translate([0*PX+O, 2*PY+(PCB_D+O), WALL_TOP+LID_TOP]) rotate([180,0,0]) color([0.55,0.45,0.80]) lid_fan();
+}
