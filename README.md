@@ -37,15 +37,19 @@ Common base: [`case_base.stl`](stl/case_base.stl) — works with all four lids.
 
 ### Powering the fan
 
-The **Fan lid** takes a standard 40 mm fan (40×40, 10 mm thick — e.g. a 5 V 4010)
-held by 4× M3 screws on the 32 mm pattern. The center honeycomb doubles as a
-finger guard and intake grille; the fan blows down onto the heatsink.
+The **Fan lid** takes a standard **40 × 40 × 10 mm (4010) 5 V fan**, held by
+**4× M3 × 15 mm screws** on the 32 mm pattern — that length is a perfect fit
+through the fan into the lid bosses. The center honeycomb doubles as a finger
+guard and intake grille; the fan blows down onto the heatsink.
 
 > ⚠️ The RDK X5's onboard fan header (**J15**) is a JST-SH **1.0 mm 2-pin** and
 > is too small for most hobby-fan plugs. The simplest reliable hookup is the
 > **40-pin GPIO header**: fan **+ (red) → pin 4 (5V)**, **− (black) → pin 6 (GND)**.
-> This runs the fan full-speed whenever the board is powered. Measured drop on a
-> bare board: idle DDR/CPU/BPU **66 °C → ~49 °C** with a 5 V 4010.
+> This runs the fan full-speed whenever the board is powered.
+>
+> **Measured cooling (assembled, lid on):** idle **66 °C passive → 41 °C** with the
+> 4010 fan ducted through the honeycomb — a **−25 °C** drop, plenty of headroom for
+> running YOLO on the BPU.
 
 ![Base](images/case_base.png)
 
