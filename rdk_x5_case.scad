@@ -14,10 +14,10 @@
 
 // ---------- core dimensions ----------
 PCB_W=85; PCB_D=56; PCB_CH=3; PCB_T=1.6;
-WALL=2.2; FLOOR=2.0; GAP=1.00;   // v5: 0.80→1.00 (実機印刷で基板がまだギチギチ・底まで座らない→さらに広げた)
+WALL=2.2; FLOOR=2.0; GAP=1.30;   // v5.3: 1.00→1.30. Official STEP: USB-C/UART stick out 1.28 mm past the front edge, so a 1.0 gap blocked a straight drop-in
 BOTTOM_CLEAR=3.5;          // under PCB (pins, microSD)
 TOP_CLEAR=20.0;            // above PCB top (tall USB ~16.5 + headroom for lip)
-LEDGE=2.0;                 // perimeter ledge PCB rests on
+LEDGE=2.6;                 // perimeter ledge PCB rests on (v5.3: 2.0→2.6 so the board keeps 1.3 mm of support with the wider GAP)
 LID_TOP=2.4;               // lid plate thickness
 LIP_DEPTH=3.0;             // lid locating lip depth (in the clear zone)
 LIP_W=1.8;
@@ -101,6 +101,15 @@ module microsd_slot(){
     translate([-(WALL+GAP)-1,26.0,z0+(z1-z0)/2]) rotate([0,90,0])
         cylinder(d=9, h=WALL+GAP+4, $fn=40);
 }
+// v5.3: the official STEP shows parts hanging up to ~1.9 mm below the PCB along
+// the front edge at X 42–59 (CSI camera connector area). The perimeter LEDGE ran
+// right under them, so the board sat on those parts and never reached the floor.
+// Cut the ledge away over that span (the board still rests on the rest of the ring).
+LEDGE_RELIEF_X=[40.5,60.5];
+module ledge_relief(){
+    translate([LEDGE_RELIEF_X[0],-GAP-0.1,FLOOR])
+        cube([LEDGE_RELIEF_X[1]-LEDGE_RELIEF_X[0],GAP+LEDGE+0.6,BOTTOM_CLEAR+0.02]);
+}
 module floor_vents(){ for(i=[0:6],j=[0:5]) translate([32+i*4,18+j*4,-1]) cylinder(d=2.4,h=FLOOR+2); }
 module foot_recess(){ for(p=[[9,8],[76,8],[9,48],[76,48]]) translate([p[0],p[1],-0.1]) cylinder(d=8,h=0.8); }
 
@@ -117,6 +126,10 @@ module snap_bead(){
                 difference(){ pcb_off(GAP); pcb_off(GAP-SNAP_BEAD*0.5); }   // upper ramp
         }
         for(p=PORTS) port_cut(p);   // no bead across the open-top port notches
+        // v5.3: no bead where connectors stick out past the PCB edge and must pass
+        // the rim on the way in (front USB-C/UART span, left HDMI/audio span).
+        translate([4,-GAP-WALL-1,0]) cube([41,WALL+2,WALL_TOP+2]);
+        translate([-GAP-WALL-1,22,0]) cube([WALL+2,30,WALL_TOP+2]);
     }
 }
 // matching groove cut into the lid lip outer face (一周凹)
@@ -147,6 +160,7 @@ module case_base(){
             translate([0,0,PCB_BOT]) linear_extrude(WALL_TOP) pcb_off(GAP);
             // under-PCB recess (PCB rests on LEDGE ring)
             translate([0,0,FLOOR]) linear_extrude(BOTTOM_CLEAR+0.01) pcb_off(GAP-LEDGE);
+            ledge_relief();
             // accurate ports
             for(p=PORTS) port_cut(p);
             microsd_slot();
