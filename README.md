@@ -144,7 +144,7 @@ Open `rdk_x5_case.scad` and edit the `// PARAMETERS` block. Useful knobs:
 Checked against the official STEP model, with the board mesh placed in the base:
 - **Board did not sit down.** Parts hang up to 1.9 mm below the PCB along the front edge at X 42–59 and rested on the ledge. The ledge is now cut away over X 40.5–60.5.
 - **Board could not be lowered in.** `GAP` 1.0 → 1.3 mm, `LEDGE` 2.0 → 2.6 mm, and no snap ridge over the front connector span and the left HDMI/audio span.
-- Result: zero interference with the board seated. STLs, 3MFs and preview images regenerated. Real-print check pending.
+- Result: zero interference with the board seated. STLs, 3MFs and preview images regenerated. Test print: the board fits (Nov 2026).
 
 ### v5.2 (2026-06)
 UART opening moved to the real Micro-USB connector position.
