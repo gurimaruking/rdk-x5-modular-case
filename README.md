@@ -13,6 +13,8 @@
 
 > Snap-on lids over a board held by an outer clamp — no PCB-side screws.
 
+> **v5.3 (2026-11):** fixes the board not fitting in the v5.2 base. See [Changelog](#changelog) and [Putting the board in](#putting-the-board-in).
+
 ## Why this exists
 
 As of May 2026, RDK X5 has **no community 3D-printable case** on Printables,
@@ -53,13 +55,25 @@ guard and intake grille; the fan blows down onto the heatsink.
 
 ![Base](images/case_base.png)
 
+## Putting the board in
+
+The left HDMI/audio connectors stick out 2.3 mm past the PCB edge, more than
+the 1.3 mm side gap, so the board goes in at an angle:
+
+1. Tilt the board and slide the **left side (HDMI / audio) into its window first**.
+2. Lower the **right side (USB / LAN)** — that side is open at the top.
+3. Let the board rest on the ledge and **centre it left–right** (it can move up to 1.3 mm in X; front–back is located by the right-side port windows).
+4. Push the lid on until it clicks.
+
+For Bambu Studio, open [`stl/rdk_x5_case.3mf`](stl/rdk_x5_case.3mf): one plate per part, print settings included.
+
 ## Specifications
 
 | Item | Value |
 |------|-------|
 | Compatible board | D-Robotics RDK X5 8GB (Part No. DROBOTICS-RDK-X5-8GB-V10) |
 | Reference source | Official D-Robotics V1P0 DXF & STEP (`reference/`) |
-| Case footprint | ~89 × 60 × 24 mm |
+| Case footprint | ~92 × 63 × 29.5 mm (base 27.1 mm + lid) |
 | PCB retention | Outer clamp (no PCB-side screws — preserves stock heatsink holes) |
 | Lid attachment | **Snap / press-fit — no screws** (tunable via `SNAP_CLEAR`) |
 | Designed material | PLA / PETG (2.0 mm wall) |
@@ -99,9 +113,11 @@ Open `rdk_x5_case.scad` and edit the `// PARAMETERS` block. Useful knobs:
 
 | Variable | Default | When to change |
 |----------|---------|---------------|
-| `GAP` | 1.0 mm | Per-side PCB clearance. Lower (0.8) for a snug board, raise if it binds. Printers with elephant's foot may need more — or enable foot compensation in the slicer |
-| `SNAP_CLEAR` | 0.05 mm | Lid lip press-fit. Lower = tighter lid; negative = interference |
-| `SNAP_BEAD` | 0.45 mm | Snap ridge/groove engagement depth. Raise for a firmer click, lower if the lid won't close |
+| `GAP` | 1.3 mm | Per-side PCB clearance. The front USB-C/UART stick out 1.28 mm past the PCB edge, so do not go below 1.3. Printers with elephant's foot may need more — or enable foot compensation in the slicer |
+| `LEDGE` | 2.6 mm | Width of the ring the PCB rests on. Keep it at least `GAP` + 1.3 so the board stays supported |
+| `LEDGE_RELIEF_X` | [40.5, 60.5] | Front span where the ledge is cut away for the parts under the CSI connector area |
+| `SNAP_CLEAR` | 0.02 mm | Lid lip press-fit. Lower = tighter lid; negative = interference |
+| `SNAP_BEAD` | 0.55 mm | Snap ridge/groove engagement depth. Raise for a firmer click, lower if the lid won't close. Left out over the front connectors and the left HDMI span |
 | `TOP_CLEAR` | 20 mm | Increase if using a tall heatsink + fan |
 | `WALL` | 2.2 mm | Drop to 1.6 for ABS, raise to 3.0 for TPU |
 | `VESA` | 50 (50×50 M4) | Max that fits on the 56 mm-deep lid; an assert guards against overhang |
@@ -121,6 +137,17 @@ Open `rdk_x5_case.scad` and edit the `// PARAMETERS` block. Useful knobs:
 - [ ] DIN-rail Lid — industrial mount (community request welcome)
 - [ ] Print validation on real hardware (PLA / PETG)
 - [ ] Thermal validation under load
+
+## Changelog
+
+### v5.3 (2026-11)
+Checked against the official STEP model, with the board mesh placed in the base:
+- **Board did not sit down.** Parts hang up to 1.9 mm below the PCB along the front edge at X 42–59 and rested on the ledge. The ledge is now cut away over X 40.5–60.5.
+- **Board could not be lowered in.** `GAP` 1.0 → 1.3 mm, `LEDGE` 2.0 → 2.6 mm, and no snap ridge over the front connector span and the left HDMI/audio span.
+- Result: zero interference with the board seated. STLs, 3MFs and preview images regenerated. Test print: the board fits (Nov 2026).
+
+### v5.2 (2026-06)
+UART opening moved to the real Micro-USB connector position.
 
 ## Disclaimer
 
